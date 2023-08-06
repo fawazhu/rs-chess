@@ -1,18 +1,10 @@
-use actix_web::{get, HttpServer, App, Responder, HttpResponse};
+use warp::Filter;
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    return HttpResponse::Ok().body("Hello, World!");
+mod health;
+
+#[tokio::main]
+async fn main() {
+    let api = warp::path("api").and(health::filter());
+
+    warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 }
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new()
-            .service(hello)
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
-}
-
