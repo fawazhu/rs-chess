@@ -2,18 +2,14 @@ use std::convert::Infallible;
 use warp::Filter;
 
 use super::{
-    handlers::{live_respond, ready_respond},
-    services::{HealthProxy, HealthService},
-    types::{HealthStatus, HealthyStatus},
+    handlers::{live_response, ready_response},
+    services::HealthService,
 };
 
-pub fn health() -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone
-{
-    let health = HealthService::new();
-    health
-        .clone()
-        .put(HealthStatus::Healthy(HealthyStatus::Running));
-    warp::path("health").and(ready(health.clone()).or(live(health.clone())))
+pub fn health(
+    health_service: HealthService,
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
+    warp::path("health").and(ready(health_service.clone()).or(live(health_service.clone())))
 }
 
 pub fn ready(
@@ -22,7 +18,7 @@ pub fn ready(
     warp::path("ready")
         .and(warp::get())
         .and(with_health(health_service))
-        .and_then(ready_respond)
+        .and_then(ready_response)
 }
 
 pub fn live(
@@ -31,7 +27,7 @@ pub fn live(
     warp::path("live")
         .and(warp::get())
         .and(with_health(health_service))
-        .and_then(live_respond)
+        .and_then(live_response)
 }
 
 pub fn with_health(

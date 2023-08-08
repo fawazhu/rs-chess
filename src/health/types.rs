@@ -1,7 +1,9 @@
-use serde::{ser::SerializeStruct, Serialize};
+use serde::Serialize;
 use std::fmt;
 
+#[derive(PartialEq, Debug, Clone, Copy, Serialize)]
 pub enum UnhealthyStatus {
+    Starting,
     Degraded,
     Down,
 }
@@ -9,32 +11,15 @@ pub enum UnhealthyStatus {
 impl fmt::Display for UnhealthyStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            UnhealthyStatus::Starting => write!(f, "{}", "Starting"),
             UnhealthyStatus::Degraded => write!(f, "{}", "Degraded"),
             UnhealthyStatus::Down => write!(f, "{}", "Down"),
         }
     }
 }
 
-impl Serialize for UnhealthyStatus {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl Clone for UnhealthyStatus {
-    fn clone(&self) -> Self {
-        match *self {
-            UnhealthyStatus::Degraded => UnhealthyStatus::Degraded,
-            UnhealthyStatus::Down => UnhealthyStatus::Down,
-        }
-    }
-}
-impl Copy for UnhealthyStatus {}
-
-pub enum HealthyStatus {
+#[derive(PartialEq, Debug, Clone, Copy, Serialize)]
+pub enum HealthyStatus { 
     Running,
     Recovered,
 }
@@ -48,25 +33,7 @@ impl fmt::Display for HealthyStatus {
     }
 }
 
-impl Serialize for HealthyStatus {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl Clone for HealthyStatus {
-    fn clone(&self) -> Self {
-        match *self {
-            HealthyStatus::Running => HealthyStatus::Running,
-            HealthyStatus::Recovered => HealthyStatus::Recovered,
-        }
-    }
-}
-impl Copy for HealthyStatus {}
-
+#[derive(PartialEq, Debug, Clone, Copy, Serialize)]
 pub enum HealthStatus {
     Unhealthy(UnhealthyStatus),
     Healthy(HealthyStatus),
@@ -81,50 +48,8 @@ impl fmt::Display for HealthStatus {
     }
 }
 
-impl Serialize for HealthStatus {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl Clone for HealthStatus {
-    fn clone(&self) -> Self {
-        match self {
-            HealthStatus::Unhealthy(status) => HealthStatus::Unhealthy(status.clone()),
-            HealthStatus::Healthy(status) => HealthStatus::Healthy(status.clone()),
-        }
-    }
-}
-impl Copy for HealthStatus {}
-
+#[derive(PartialEq, Debug, Clone, Copy, Serialize)]
 pub struct Health {
     pub status: HealthStatus,
-    pub started: bool,
+    pub ready: bool,
 }
-
-impl Serialize for Health {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut health = serializer.serialize_struct("Health", 2)?;
-        health.serialize_field("status", &self.status).unwrap();
-        health.serialize_field("started", &self.started).unwrap();
-        return health.end();
-    }
-}
-
-impl Clone for Health {
-    fn clone(&self) -> Self {
-        Health {
-            status: self.status.clone(),
-            started: self.started.clone(),
-        }
-    }
-}
-
-impl Copy for Health {}
-
