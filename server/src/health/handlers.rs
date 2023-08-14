@@ -1,7 +1,6 @@
 use std::convert::Infallible;
-
-use hyper::StatusCode;
 use serde_json::json;
+use warp::hyper::StatusCode;
 
 use super::services::HealthService;
 
