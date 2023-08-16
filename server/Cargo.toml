@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-log = "0.4.19"
-log4rs = { version = "1.2.0", features = ["json_format"] }
 serde = { version = "^1.0", features = ["derive"] }
-serde_json = "1.0.104"
+serde_json = "^1.0.104"
+time = "^0.3.25"
 tokio = { version = "^1.0", features = ["full"] }
+tracing = "^0.1.37"
+tracing-subscriber = { version = "^0.3.17", features = ["json", "local-time"] }
 warp = { version = "^0.3.0", features = ["tls"] }

@@ -1,9 +1,9 @@
 use super::{Health, HealthStatus, HealthyStatus, UnhealthyStatus};
-use log;
 use std::{
     net::SocketAddr,
     sync::{Arc, Mutex},
 };
+use tracing;
 
 #[derive(Clone)]
 pub struct HealthService {
@@ -42,7 +42,7 @@ impl HealthService {
         let mut health = self.health.lock().unwrap();
         if health.ready == false {
             health.ready = true;
-            log::info!("Ready to accept requests on {}", self.address.to_string());
+            tracing::info!(target: "api::health", health = health.status.to_string(), message = format!("Ready to accept requests on http://{}", self.address.to_string()));
         }
     }
 
