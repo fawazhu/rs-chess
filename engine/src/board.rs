@@ -53,10 +53,33 @@ pub const BOARD_WIDTH: usize = 8;
 pub const BOARD_ITEM_BITS: usize = 4;
 pub const BOARD_ITEM_MASK: usize = (1 << BOARD_ITEM_BITS) - 1;
 
-pub struct BoardBuilder;
+pub struct BoardBuilder {
+    board: Board,
+}
 impl BoardBuilder {
-    pub fn build() -> Board {
-        return [0 as u64, 0 as u64, 0 as u64, 0 as u64];
+    pub const fn with_empty() -> Self {
+        return Self {
+            board: [0, 0, 0, 0],
+        };
+    }
+    
+    pub const fn with_defaults(self) -> Self {
+        Self {
+            board: [8608480568571377818, 0, 0, 4838381350443618577]
+        }
+    }
+
+    pub fn with_custom_fn<F>(self, mut custom_fn: F) -> Self
+    where
+        F: FnMut(Board) -> Board,
+    {
+        Self {
+            board: custom_fn(self.board),
+        }
+    }
+
+    pub fn build(self) -> Board {
+        self.board
     }
 }
 
@@ -105,7 +128,7 @@ mod tests {
 
     #[test]
     fn board_get_retrieves_piece_at_given_position() {
-        let mut board = BoardBuilder::build();
+        let mut board = BoardBuilder::with_empty().build();
         board[0] =
             0b0000_0000_0000_0000_0000_0000_0000_0000__1100_0000_0000_0000_0000_0000_0000_0001;
         board[1] =
@@ -124,7 +147,7 @@ mod tests {
 
     #[test]
     fn board_set_places_piece_at_given_position() {
-        let mut board = BoardBuilder::build();
+        let mut board = BoardBuilder::with_empty().build();
         board.set(0, 0, BOARD_ITEMS.white_pawn);
         assert_eq!(board.get(0, 0).unwrap(), BOARD_ITEMS.white_pawn);
         board.set(0, 0, BOARD_ITEMS.black_bishop);
@@ -139,7 +162,7 @@ mod tests {
 
     #[test]
     fn board_get_errors_when_out_of_range() {
-        let board = BoardBuilder::build();
+        let board = BoardBuilder::with_empty().build();
         assert!(board.get(8, 0).is_err());
         assert!(board.get(0, 8).is_err());
         assert!(board.get(25, 23).is_err());
@@ -147,9 +170,46 @@ mod tests {
 
     #[test]
     fn board_set_errors_when_out_of_range() {
-        let mut board = BoardBuilder::build();
+        let mut board = BoardBuilder::with_empty().build();
         assert!(board.set(8, 0, BOARD_ITEMS.white_pawn).is_some());
         assert!(board.set(0, 8, BOARD_ITEMS.white_pawn).is_some());
         assert!(board.set(25, 23, BOARD_ITEMS.white_pawn).is_some());
+    }
+
+    #[test]
+    fn board_builder_with_defaults_produces_a_standard_chess_board() {
+        let board = BoardBuilder::with_empty().with_defaults().build();
+        assert_eq!(board.get(0, 0).unwrap(), BOARD_ITEMS.black_rook);
+        assert_eq!(board.get(1, 0).unwrap(), BOARD_ITEMS.black_bishop);
+        assert_eq!(board.get(2, 0).unwrap(), BOARD_ITEMS.black_knight);
+        assert_eq!(board.get(3, 0).unwrap(), BOARD_ITEMS.black_queen);
+        assert_eq!(board.get(4, 0).unwrap(), BOARD_ITEMS.black_king);
+        assert_eq!(board.get(5, 0).unwrap(), BOARD_ITEMS.black_knight);
+        assert_eq!(board.get(6, 0).unwrap(), BOARD_ITEMS.black_bishop);
+        assert_eq!(board.get(7, 0).unwrap(), BOARD_ITEMS.black_rook);
+        assert_eq!(board.get(0, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(1, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(2, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(3, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(4, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(5, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(6, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(7, 1).unwrap(), BOARD_ITEMS.black_pawn);
+        assert_eq!(board.get(0, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(1, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(2, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(3, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(4, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(5, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(6, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(7, 6).unwrap(), BOARD_ITEMS.white_pawn);
+        assert_eq!(board.get(0, 7).unwrap(), BOARD_ITEMS.white_rook);
+        assert_eq!(board.get(1, 7).unwrap(), BOARD_ITEMS.white_bishop);
+        assert_eq!(board.get(2, 7).unwrap(), BOARD_ITEMS.white_knight);
+        assert_eq!(board.get(3, 7).unwrap(), BOARD_ITEMS.white_king);
+        assert_eq!(board.get(4, 7).unwrap(), BOARD_ITEMS.white_queen);
+        assert_eq!(board.get(5, 7).unwrap(), BOARD_ITEMS.white_knight);
+        assert_eq!(board.get(6, 7).unwrap(), BOARD_ITEMS.white_bishop);
+        assert_eq!(board.get(7, 7).unwrap(), BOARD_ITEMS.white_rook);
     }
 }
